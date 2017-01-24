@@ -22,7 +22,7 @@ Xstd  = std(X')
 % saveas(gca,'mixing_signals','png')
 
 %Applied ICA-clustering in the data:
-[result, ISRefica, ISRwasobi, Wmatrix, Wefica, Wwasobi, NoiseModel, nonseparablecomponents, NoiseSignal] = icapy(X)
+[result, ISRefica, ISRwasobi, Wmatrix, Wefica, Wwasobi, NoiseModel, nonseparablecomponents, NoiseSignal, NoiseDIAG] = icapy(X)
 
 %re-scale our signal
 %signal = bsxfun(@times,Xstd',result)
