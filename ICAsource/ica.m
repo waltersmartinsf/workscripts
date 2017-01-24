@@ -1,4 +1,4 @@
-% Here we will add all directories with matlab codes that are usefull 
+% Here we will add all directories with matlab codes that are usefull
 %to reduce data
 addpath('/Users/walter/Dropbox/work/PythonUtility/ica_pipeline/')
 
@@ -22,7 +22,7 @@ Xstd  = std(X')
 % saveas(gca,'mixing_signals','png')
 
 %Applied ICA-clustering in the data:
-[result, ISRefica, ISRwasobi, Wmatrix, Wefica, Wwasobi, NoiseModel, nonseparablecomponents] = icapy(X)
+[result, ISRefica, ISRwasobi, Wmatrix, Wefica, Wwasobi, NoiseModel, nonseparablecomponents, NoiseSignal] = icapy(X)
 
 %re-scale our signal
 %signal = bsxfun(@times,Xstd',result)

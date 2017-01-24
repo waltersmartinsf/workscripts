@@ -1,8 +1,8 @@
 % this just wraps the bbs_pipeline code in a function wrapper to be used with pymatbridge
 
-function [components, ISRefica, ISRwasobi, Wmatrix, Wefica, Wwasobi, NoiseModel, nonseparablecomponents] = icapy(args)
+function [components, ISRefica, ISRwasobi, Wmatrix, Wefica, Wwasobi, NoiseModel, nonseparablecomponents, NoiseSignal] = icapy(args)
 	%General structure of the programme. This defines the flow of the pipeline
-	%most functions are contained in sub-modules 
+	%most functions are contained in sub-modules
 
 	signals = args %Walter cahnge this line
 
@@ -12,7 +12,7 @@ function [components, ISRefica, ISRwasobi, Wmatrix, Wefica, Wwasobi, NoiseModel,
 	PSTREAM = struct();
 	PSTREAM = bss_configure(PSTREAM);
 
-	%loading data into pipeline data stream, DSTREAM, 
+	%loading data into pipeline data stream, DSTREAM,
 	%fprintf('Loading data into data-stream...')
 	global DSTREAM
 	DSTREAM = struct();
@@ -57,3 +57,4 @@ function [components, ISRefica, ISRwasobi, Wmatrix, Wefica, Wwasobi, NoiseModel,
     Wefica = DSTREAM.INFO.MCOMBI.Wefica %edited by walter
     Wwasobi = DSTREAM.INFO.MCOMBI.Wwasobi %edited by walter
     NoiseModel = DSTREAM.DATA.NMODEL.noise %edited by walter (noise model)
+		NoiseSignal = DSTREAM.DATA.NMODEL.signal %edited by walter (noise model)
