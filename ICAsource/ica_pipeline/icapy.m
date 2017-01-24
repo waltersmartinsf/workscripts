@@ -58,4 +58,4 @@ function [components, ISRefica, ISRwasobi, Wmatrix, Wefica, Wwasobi, NoiseModel,
     Wwasobi = DSTREAM.INFO.MCOMBI.Wwasobi %edited by walter
     NoiseModel = DSTREAM.DATA.NMODEL.noise %edited by walter (noise model)
 		NoiseSignal = DSTREAM.DATA.NMODEL.signal %edited by walter (noise signal)
-		NoiseDIAG = DSTREAM.DATA.NMODEL.DIAG %edited by walter (diagonal to scale the noise model)
+		NoiseDIAG = DSTREAM.DATA.NMODEL.nscale %edited by walter (diagonal to scale the noise model)
