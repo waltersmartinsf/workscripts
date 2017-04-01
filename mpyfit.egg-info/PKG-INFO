@@ -1,0 +1,15 @@
+Metadata-Version: 1.1
+Name: mpyfit
+Version: 0.9.0
+Summary: UNKNOWN
+Home-page: https://github.com/evertrol/mpyfit
+Author: Evert Rol
+Author-email: e.rol@sron.nl
+License: BSD 2 part license
+Description: UNKNOWN
+Platform: UNKNOWN
+Classifier: Intentended Audience :: Science/Research
+Classifier: Topic :: Scientific/Engineering
+Classifier: Programing Language :: Python
+Classifier: Licence :: OSI Approved :: BSD License
+Requires: numpy (>=1.6)
