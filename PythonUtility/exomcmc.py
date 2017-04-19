@@ -4,7 +4,7 @@ import emcee
 import lightcurve #Kyle's lightcurve code
 import lightcurveMCMC
 
-def exomcmc(hjd,rawflux,eflux,pfit,sigma,ndim,nwalkers,Nsize,a_Rs,inc,limbB1,limbB2,period,e,omega,show=True,space=1e-4,lnf0=np.log(0.43)):
+def exomcmc(hjd,rawflux,eflux,airmass,pfit,sigma,ndim,nwalkers,Nsize,a_Rs,inc,period,ecc,omega,limbB1, limbB2,show=True,space=1e-4,lnf0=np.log(0.43)):
     '''
     Executing the Monte Carlo Markov Chain in Exoplanetary Transits
     ---
@@ -21,6 +21,93 @@ def exomcmc(hjd,rawflux,eflux,pfit,sigma,ndim,nwalkers,Nsize,a_Rs,inc,limbB1,lim
             will be far to relative in the initial value gived.
     Nsize:  number of total chains in the MCMC Algoritm.
     '''
+    # Lightcurve model based on occultquad routine in C/Python from Kreidberg
+    from occultquad import occultquad
+    import mpyfit
+    am = np.array(airmass)
+
+    def delta(phase,inc, ecc = 0, omega=0):
+        """
+        Compute the distance center-to-center between planet and host star.
+        ___
+
+        INPUT:
+
+        phase: orbital phase in radian
+        inc: inclination of the system in radian
+
+        OPTIONAL INPUT:
+
+        ecc:
+        omega:
+
+        //
+        OUTPUT:
+
+        distance center-to-center, double-float number.
+        ___
+
+
+        """
+        phase = 2*np.pi*phase
+        if ecc == 0 and omega == 0:
+            delta = np.sqrt(1-(np.cos(phase)**2)*(np.sin(inc)**2))
+        else:
+            delta = (1.-ecc**2.)/(1.-ecc*np.sin(phase-omega))* np.sqrt((1.-(np.cos(phase))**2.*(np.sin(inc))**2))
+
+        return delta
+
+    def simple_model(JD, startpar0, startpar1):
+        phase = (JD - startpar1)/period
+        distance_vector = delta(phase,inc) * a_Rs
+        # print distance_vector
+        #model = occultation_fn(distance_vector,startpar0,limbB1,limbB2,show=False)
+        model = occultquad(distance_vector, limbB1, limbB2, startpar0)#, len(hjd))
+        model = model[0]
+        return model
+
+    def model_am_exp(hjd,startpar0,startpar1,startpar2,startpar3):
+        model = simple_model(hjd,startpar0, startpar1)
+        model_am = model * startpar2 * np.exp(-1. * startpar3 * am) #multiply light curve by factor x exponential
+        return model_am
+
+    def residuals_am_exp(params,args): #residuals function for mpfit
+        RpRs = params[0]
+        Tc = params[1]
+        mu1 = params[2]
+        mu2 = params[3]
+        hjd, data, eps_data = args
+        model = model_am_exp(hjd,RpRs,Tc,mu1,mu2)
+        return (data-model)/eps_data
+
+    def model_am_linear(hjd,startpar0,startpar1,startpar2,startpar3):
+        model = simple_model(hjd,startpar0, startpar1)
+        model_am = model * (startpar2 * am + startpar3) #multiply light curve by factor x exponential
+        return model_am
+
+    def residuals_linear(params,args): #residuals function for mpfit
+        RpRs = params[0]
+        Tc = params[1]
+        mu1 = params[2]
+        mu2 = params[3]
+        hjd, data, eps_data = args
+        model = model_am_linear(hjd,RpRs,Tc,mu1,mu2)
+        return (data-model)/eps_data
+
+    def model_am_2deg(hjd,startpar0,startpar1,startpar2,startpar3,startpar4):
+        model = simple_model(hjd,startpar0, startpar1)
+        model_am = model * (startpar2 + startpar3*am + startpar4*am) #multiply light curve by factor x exponential
+        return model_am
+
+    def residuals_2deg_mpfit(params,args): #residuals function for mpfit
+        RpRs = params[0]
+        Tc = params[1]
+        mu1 = params[2]
+        mu2 = params[3]
+        mu3 = params[4]
+        hjd, data, eps_data = args
+        model = model_am_2deg(hjd,RpRs,Tc,mu1,mu2,mu3)
+        return (data-model)/eps_data
 
     def lnlike(theta,x,y,yerr):
         """
@@ -39,10 +126,10 @@ def exomcmc(hjd,rawflux,eflux,pfit,sigma,ndim,nwalkers,Nsize,a_Rs,inc,limbB1,lim
         """
         p1, p2, p3, lnf = theta
 
-        # model = model_am_exp(x,p1, p2, p3, 0)
-        fit_result_lnlike = lightcurveMCMC.lightcurve_fit(float(p1),float(p2),float(p3),a_Rs,inc,limbB1,limbB2,period,e,omega,np.array(x),np.array(y),np.array(yerr))
-        model_standart = (fit_result_lnlike.final_curve - np.mean(fit_result_lnlike.final_curve))/np.std(fit_result_lnlike.final_curve)
-        model = model_standart * np.std(y) + np.mean(y)
+        model = model_am_exp(x,p1, p2, p3, 0)
+        # fit_result_lnlike = lightcurveMCMC.lightcurve_fit(float(p1),float(p2),float(p3),a_Rs,inc,limbB1,limbB2,period,e,omega,np.array(x),np.array(y),np.array(yerr))
+        # model_standart = (fit_result_lnlike.final_curve - np.mean(fit_result_lnlike.final_curve))/np.std(fit_result_lnlike.final_curve)
+        # model = model_standart * np.std(y) + np.mean(y)
 
         inv_sigma2 = 1.0/(yerr**2 + model**2*np.exp(2*lnf))
         return -0.5*(np.sum((y-model)**2*inv_sigma2 - np.log(inv_sigma2)))
@@ -86,6 +173,7 @@ def exomcmc(hjd,rawflux,eflux,pfit,sigma,ndim,nwalkers,Nsize,a_Rs,inc,limbB1,lim
     if show == True:
         print(minTc, maxTc)
     startpar = [p1, p2, p3,lnf]
+
     if show == True:
         print('Initial parameters = ',startpar)
         print('Initial Dispersion of the initial parameters = ',sigma)
@@ -107,18 +195,18 @@ def exomcmc(hjd,rawflux,eflux,pfit,sigma,ndim,nwalkers,Nsize,a_Rs,inc,limbB1,lim
 
         print('The percentiles for Tc are: ')
         print('31% Tc = ',np.percentile(data.Tc,31),' and the inferior error are = ', abs(np.percentile(data.Tc,50)-np.percentile(data.Tc,31)))
-        print '50% Tc = ',np.percentile(data.Tc,50)
-        print '81% Tc = ',np.percentile(data.Tc,81),' and the superior error are = ', abs(np.percentile(data.Tc,50)-np.percentile(data.Tc,81))
+        print ('50% Tc = ',np.percentile(data.Tc,50))
+        print('81% Tc = ',np.percentile(data.Tc,81),' and the superior error are = ', abs(np.percentile(data.Tc,50)-np.percentile(data.Tc,81)))
 
         print('The percentiles for A are: ')
         print('31% A = ',np.percentile(data.A,31),' and the inferior error are = ', abs(np.percentile(data.A,50)-np.percentile(data.A,31)))
-        print '50% A = ',np.percentile(data.A,50)
-        print '81% A = ',np.percentile(data.A,81),' and the superior error are = ', abs(np.percentile(data.A,50)-np.percentile(data.A,81))
+        print('50% A = ',np.percentile(data.A,50))
+        print('81% A = ',np.percentile(data.A,81),' and the superior error are = ', abs(np.percentile(data.A,50)-np.percentile(data.A,81)))
 
         print('The percentiles for lnf are: ')
         print('31% lnf = ',np.percentile(data.lnf,31),' and the inferior error are = ', abs(np.percentile(data.lnf,50)-np.percentile(data.lnf,31)))
-        print '50% lnf = ',np.percentile(data.lnf,50)
-        print '81% lnf = ',np.percentile(data.lnf,81),' and the superior error are = ', abs(np.percentile(data.lnf,50)-np.percentile(data.lnf,81))
+        print('50% lnf = ',np.percentile(data.lnf,50))
+        print('81% lnf = ',np.percentile(data.lnf,81),' and the superior error are = ', abs(np.percentile(data.lnf,50)-np.percentile(data.lnf,81)))
 
     return data
 
@@ -178,13 +266,13 @@ def mcmc(hjd,rawflux,eflux,pfit,sigma,N,a_Rs,inc,limbB1,limbB2,period,e,omega,sh
     chi2, residuos = chisquare_dof(hjd,rawflux,eflux,pfit,a_Rs,inc,limbB1,limbB2,period,e,omega)
 
     if chi2/(len(rawflux)-3.) > 1:
-        print 'Your chi-squared value is more than 1. Inflating error bars.'
+        print('Your chi-squared value is more than 1. Inflating error bars.')
         eflux = eflux * np.sqrt(chi2/(len(rawflux)-3.))
 
     if show == True:
-        print 'Input data: '
-        print 'Iter = ',N
-        print 'Start parameters: ',np.array(pfit)
-        print 'errors: ', np.array(sigma)
+        print('Input data: ')
+        print('Iter = ',N)
+        print('Start parameters: ',np.array(pfit))
+        print('errors: ', np.array(sigma))
     Result,chi2result,rate = mcmc(hjd,rawflux,eflux,sigma,pfit,[3.,2.5,3.5],N,a_Rs,inc,limbB1,limbB2,period,e,omega)
     return Result,chi2result,rate
