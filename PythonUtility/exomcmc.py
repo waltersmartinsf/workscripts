@@ -1,6 +1,8 @@
 import numpy as np
 from pandas import DataFrame
 import emcee
+import lightcurve #Kyle's lightcurve code
+import lightcurveMCMC
 
 def exomcmc(hjd,rawflux,eflux,pfit,sigma,ndim,nwalkers,Nsize,a_Rs,inc,limbB1,limbB2,period,e,omega,show=True,space=1e-4,lnf0=np.log(0.43)):
     '''
@@ -21,8 +23,6 @@ def exomcmc(hjd,rawflux,eflux,pfit,sigma,ndim,nwalkers,Nsize,a_Rs,inc,limbB1,lim
     '''
 
     def lnlike(theta,x,y,yerr):
-        import lightcurve #Kyle's lightcurve code
-        import lightcurveMCMC
         """
         THis function returns the maximum likelihood following the ideas of Hoog et al.(2010)
         to fitting a model to data using Markov Chain Monte Carlo Method using Metropole-Hastings Algoritm and Gibbs Sample.
@@ -40,7 +40,7 @@ def exomcmc(hjd,rawflux,eflux,pfit,sigma,ndim,nwalkers,Nsize,a_Rs,inc,limbB1,lim
         p1, p2, p3, lnf = theta
 
         # model = model_am_exp(x,p1, p2, p3, 0)
-        fit_result_lnlike = lightcurveMCMC.lightcurve_fit(float(p1),np.mean(x),a_Rs,inc,limbB1,limbB2,period,e,omega,np.array(x),np.array(y),np.array(yerr))
+        fit_result_lnlike = lightcurveMCMC.lightcurve_fit(float(p1),float(p2),float(p3),a_Rs,inc,limbB1,limbB2,period,e,omega,np.array(x),np.array(y),np.array(yerr))
         model_standart = (fit_result_lnlike.final_curve - np.mean(fit_result_lnlike.final_curve))/np.std(fit_result_lnlike.final_curve)
         model = model_standart * np.std(y) + np.mean(y)
 
@@ -122,17 +122,22 @@ def exomcmc(hjd,rawflux,eflux,pfit,sigma,ndim,nwalkers,Nsize,a_Rs,inc,limbB1,lim
 
     return data
 
-def mcmc(hjd,rawflux,eflux,pfit,sigma,N):
+def mcmc(hjd,rawflux,eflux,pfit,sigma,N,a_Rs,inc,limbB1,limbB2,period,e,omega,show=True):
     '''
     Metropolis-Hastings MCMC
     '''
-    def chisquare_dof(x,y,eps,pfit):
+    from numba import jit
+    def chisquare_dof(x,y,eps,pfit,a_Rs,inc,limbB1,limbB2,period,e,omega):
         """
         Return the chisquare data.
 
         """
         a,b,c = pfit
-        residuos = (y - model_am_exp(hjd,a,b,c,0))/eps
+        #residuos = (y - model_am_exp(hjd,a,b,c,0))/eps
+        fit_result_lnlike = lightcurveMCMC.lightcurve_fit(float(a),float(b),float(c),a_Rs,inc,limbB1,limbB2,period,e,omega,np.array(x),np.array(y),np.array(eps))
+        model_standart = (fit_result_lnlike.final_curve - np.mean(fit_result_lnlike.final_curve))/np.std(fit_result_lnlike.final_curve)
+        model = model_standart * np.std(y) + np.mean(y)
+        residuos = (y- model)/eps
         chi2 = sum(residuos**2)
         return chi2,residuos
 
@@ -143,13 +148,13 @@ def mcmc(hjd,rawflux,eflux,pfit,sigma,N):
         return pick
 
     @jit
-    def mcmc(x,y,eps,sigma,pfit,togsig,N):
+    def mcmc(x,y,eps,sigma,pfit,togsig,N,a_Rs,inc,limbB1,limbB2,period,e,omega):
         param = np.zeros(len(pfit))
         param = pfit + np.random.normal(size=len(pfit)) * sigma * togsig
         #if param[0] < 0: #thi is a force in our mcmc routine to maintenece the first parameter inside the phase space
         #    while param[0] < 0:
         #        param = pfit + np.random.normal(size=len(pfit)) * sigma * togsig
-        chi2, residuos = chisquare_dof(x,y,eps,param)
+        chi2, residuos = chisquare_dof(x,y,eps,param,a_Rs,inc,limbB1,limbB2,period,e,omega)
 
         result = []
         chi2_result = []
@@ -158,7 +163,7 @@ def mcmc(hjd,rawflux,eflux,pfit,sigma,N):
             pick = pick_mcmc(pfit)
             dparam = np.random.choice(pick)* np.random.normal(size=len(pfit)) * sigma *togsig
             param_new = param + dparam
-            chi2new, residuos = chisquare_dof(x,y,eps,param_new)
+            chi2new, residuos = chisquare_dof(x,y,eps,param_new,a_Rs,inc,limbB1,limbB2,period,e,omega)
             prob = np.exp(0.5*(chi2-chi2new))
             a = min([prob,1])
             u = np.random.random()
@@ -170,7 +175,7 @@ def mcmc(hjd,rawflux,eflux,pfit,sigma,N):
                 chi2 = chi2new
         return result,chi2_result,accept/N
     ##
-    chi2, residuos = chisquare_dof(hjd,rawflux,eflux,pfit)
+    chi2, residuos = chisquare_dof(hjd,rawflux,eflux,pfit,a_Rs,inc,limbB1,limbB2,period,e,omega)
 
     if chi2/(len(rawflux)-3.) > 1:
         print 'Your chi-squared value is more than 1. Inflating error bars.'
@@ -181,4 +186,5 @@ def mcmc(hjd,rawflux,eflux,pfit,sigma,N):
         print 'Iter = ',N
         print 'Start parameters: ',np.array(pfit)
         print 'errors: ', np.array(sigma)
-    Result,chi2result,rate = mcmc(hjd,rawflux,eflux,sigma,pfit,[3.,2.5,3.5],N)
+    Result,chi2result,rate = mcmc(hjd,rawflux,eflux,sigma,pfit,[3.,2.5,3.5],N,a_Rs,inc,limbB1,limbB2,period,e,omega)
+    return Result,chi2result,rate

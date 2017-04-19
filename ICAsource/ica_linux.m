@@ -1,7 +1,7 @@
 % Here we will add all directories with matlab codes that are usefull
 %to reduce data
 %addpath('/Users/walter/Dropbox/work/PythonUtility/ica_pipeline/')
-addpath('/home/walter/GitHub/workscripts/ICAsource/ica_pipeline')
+addpath('/home/walter/github/workscripts/ICAsource/ica_pipeline')
 
 %let's import our data
 %change for the new directory

@@ -1,4 +1,4 @@
-def lightcurve_fit(_RpRs,_tmid,_aR,_i,_u1,_u2,_P,_e,_omega,_time,_flux,_eflux):
+def lightcurve_fit(_RpRs,_tmid,A0,_aR,_i,_u1,_u2,_P,_e,_omega,_time,_flux,_eflux):
 	'''
 	Use lmfit package
 
@@ -212,7 +212,7 @@ def lightcurve_fit(_RpRs,_tmid,_aR,_i,_u1,_u2,_P,_e,_omega,_time,_flux,_eflux):
 	##############################################################
 	######################## Fitting  ############################
 
-	p_init = [Rp,aR,P,i,u1,u2,e,omega,tmid,1,0,0]
+	p_init = [Rp,aR,P,i,u1,u2,e,omega,tmid,A0,0,0]
 	mybounds = [ (0.0,1), # Rp/Rs
 	            (aR,aR), # aR
 	            (P,P), # P
