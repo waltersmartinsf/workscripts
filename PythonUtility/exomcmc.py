@@ -4,7 +4,7 @@ import emcee
 import lightcurve #Kyle's lightcurve code
 import lightcurveMCMC
 
-def exomcmc(hjd,rawflux,eflux,airmass,pfit,sigma,ndim,nwalkers,Nsize,a_Rs,inc,period,ecc,omega,limbB1, limbB2,show=True,space=1e-4,lnf0=np.log(0.43)):
+def exomcmc(hjd,rawflux,eflux,airmass,pfit,sigma,ndim,nwalkers,Nsize,a_Rs,inc,period,ecc,omega,limbB1,limbB2,show=True,space=1e-4,lnf0=np.log(0.43)):
     '''
     Executing the Monte Carlo Markov Chain in Exoplanetary Transits
     ---
