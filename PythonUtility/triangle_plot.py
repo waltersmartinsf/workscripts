@@ -3,7 +3,7 @@ from matplotlib.colors import LogNorm
 import numpy as np
 
 
-def corner_beautiful_plot(data,bestfit,split,bins=50,labels=None,interpolation='nearest',cmap=plt.cm.gray,show=True):
+def corner_beautiful_plot(data,bestfit,split,bins=50,labels=None,interpolation='nearest',cmap=plt.cm.gray,show=True,xrotate=35,yrotate=35):
     """
     Create a croner plot from a pandas dataframe input.
     ___
@@ -93,7 +93,9 @@ def corner_beautiful_plot(data,bestfit,split,bins=50,labels=None,interpolation='
             # i == j, Diagonal plots: Hitograms plots from i-columns at dataframe input.
             if i == j:
                 #remove histogram grid.
-                axarr[i][j].grid() 
+                #axarr[i][j].grid() 
+                #remove the grid of the image.
+                axarr[i][j].grid(b=False)
                 #create the numpy.histogram variable
                 #normed=True to match with the plt.imshow image
                 #bins setting to be at the sqrt-scale, sqrt(len(i-column)), to show
@@ -125,7 +127,7 @@ def corner_beautiful_plot(data,bestfit,split,bins=50,labels=None,interpolation='
                     axarr[i][j].get_xaxis().set_visible(False)
                 if i == int(shape[1]-1):
                     axarr[i][j].get_xaxis().set_visible(True)
-                    axarr[i][j].locator_params(axis='x',nbins=6)
+                    axarr[i][j].locator_params(axis='x',nbins=6,rotation=xrotate)
             #i != j plots: image plot from plt.imshow
             #We will map the numpy.histogram2d from the j-column (x-axis) per i-column (yaxis)
             #The change of j to x-axis and i to y-axis is because to mach the x-label of the
@@ -165,8 +167,8 @@ def corner_beautiful_plot(data,bestfit,split,bins=50,labels=None,interpolation='
                 axarr[i][j].set_aspect('auto')
                 #Fix the number of values at the array to clean the x- and y-ticks.
                 #here, I choose to make only 6 bins, and this will give 5-ticks at maximum
-                axarr[i][j].locator_params(axis='x',nbins=6)
-                axarr[i][j].locator_params(axis='y',nbins=6)
+                axarr[i][j].locator_params(axis='x',nbins=6,rotation=xrotate)
+                axarr[i][j].locator_params(axis='y',nbins=6,rotation=yrotate)
                 #Set the labels of each plot. If the labels are given as one of the input
                 #parameters, these will be used instead of the names of the pandas 
                 #dataframe input 
