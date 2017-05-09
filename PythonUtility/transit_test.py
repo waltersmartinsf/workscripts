@@ -7,7 +7,7 @@ import requests
 array_1d_double = np.ctypeslib.ndpointer(dtype=ctypes.c_double,ndim=1,flags=['C_CONTIGUOUS','aligned'])
 
 # load library
-lib_trans = np.ctypeslib.load_library('lib_transit.so','/Users/walterwsmf/Dropbox/research/codes/KyleLightcurve')
+lib_trans = np.ctypeslib.load_library('lib_transit.so','/Users/walter/github/workscripts/PythonUtility/lightcurveModel')
 
 # load function occultquadC from transit library
 occultquadC = lib_trans.occultquad
