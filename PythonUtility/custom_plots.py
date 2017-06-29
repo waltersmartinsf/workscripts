@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 import numpy as np
 
-def init_plotting():
-    plt.rcParams['figure.figsize'] = (14.0,8.0)
+def init_plotting(x=14,y=18):
+    plt.rcParams['figure.figsize'] = (x,y)
     plt.rcParams['font.size'] = 20
     #plt.rcParams['font.family'] = 'Times New Roman'
     plt.rcParams['axes.labelsize'] = plt.rcParams['font.size']
