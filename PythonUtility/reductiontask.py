@@ -202,7 +202,7 @@ def masterflat(flat_sulfix,data_path,save_path):
     #************************************************************************************************************
     masterbias_spc = fits.getdata('superbias.fits',header=False)
     masterbias_spc = np.array(masterbias_spc,dtype='Float64')
-    imarith(masterbias_spc,flat,procedure ='subtracted',sulfix='b')
+    imarith(masterbias_spc,flat,procedure ='subtracted',sulfix='B')
     #************************************************************************************************************
     #********************  END Python Numpy Redction with Astropy.io.fits  **************************************
     #************************************************************************************************************
