@@ -8,7 +8,7 @@ from astropy.time import Time
 import pandas as pd #dataframe
 import numpy as np
 import yaml
-from string import split
+#from string import split
 import os
 from matplotlib import pyplot as plt #graphical package
 
@@ -63,7 +63,7 @@ def skychart(table,site,utc_offset,midpointJD_label,ingressJD_label, egressJD_la
     
     #Number of objects
     N = len(table)
-    print 'Number of exoplanets = ',N
+    print('Number of exoplanets = ',N)
     
     # observable = []
     for i  in range(N):
@@ -108,7 +108,7 @@ def skychart(table,site,utc_offset,midpointJD_label,ingressJD_label, egressJD_la
         # plt.title('Ingress ='+str(ingress2.iso)+' Egress ='+str(egress2.iso))
         ##### PRINT INFORMATION ABOUT NIGHT, INGRESS, and EGRESS in UTC and LOCAL TIME
         local_time_ingress = (Time(table[ingressJD_label].values[i],format='jd',scale='utc') + utc_offset).iso
-        local_time_egress = (Time(table[ingressJD_label].values[i],format='jd',scale='utc') + utc_offset).iso
+        local_time_egress = (Time(table[egressJD_label].values[i],format='jd',scale='utc') + utc_offset).iso
         #Choose the correct night for asking time
         # start_time = int((Time(table[ingressJD_label].values[2],format='jd',scale='utc') + utc_offset).iso[11:-10])
         # if (start_time < 24) and (start_time >= 18):
@@ -120,7 +120,7 @@ def skychart(table,site,utc_offset,midpointJD_label,ingressJD_label, egressJD_la
         #     night_date = night_date.iso[:10]
         #     # print night_date
         # plt.title('Site Night = '+night_date+'\n'+'Site Time: '+'Ingress ='+str(local_time_ingress)+' Egress ='+str(local_time_egress)+'\n'+'UTC: '+'Ingress ='+str((Time(table[ingressJD_label].values[i],format='jd',scale='utc')).iso)+' Egress ='+str((Time(table[ingressJD_label].values[i],format='jd',scale='utc')).iso))
-        plt.title('Site Time: '+'Ingress ='+str(local_time_ingress)+' Egress ='+str(local_time_egress)+'\n'+'UTC: '+'Ingress ='+str((Time(table[ingressJD_label].values[i],format='jd',scale='utc')).iso)+' Egress ='+str((Time(table[ingressJD_label].values[i],format='jd',scale='utc')).iso))
+        plt.title('Site Time: '+'Ingress ='+str(local_time_ingress)+' Egress ='+str(local_time_egress)+'\n'+'UTC: '+'Ingress ='+str((Time(table[ingressJD_label].values[i],format='jd',scale='utc')).iso)+' Egress ='+str((Time(table[egressJD_label].values[i],format='jd',scale='utc')).iso))
         #####
         plt.fill_between(calendar.value, 0, 90, sunaltazs.alt < -0*u.deg, color='0.5', zorder=0)  
         plt.fill_between(calendar.value, 0, 90, sunaltazs.alt < -18*u.deg, color='k', zorder=0)  
@@ -132,5 +132,5 @@ def skychart(table,site,utc_offset,midpointJD_label,ingressJD_label, egressJD_la
         plt.ylabel('Altitude [deg]')
         plt.savefig(savepath+'/skychart/'+str(table[planet_label].values[i])+' '+str(midpoint.jd)+'_.png')
         plt.close()
-    print 'Done \n'
+    print('Done \n')
     # return observable
