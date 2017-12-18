@@ -37,7 +37,7 @@ def pearson_ica_test(ica_signal,original_signal,save_dir):
 
     '''
 
-    pca = PCA(n_components=len(original_signal.columns))
+    pca = PCA(n_components=4)
     H = pca.fit_transform(original_signal)
     H = pd.DataFrame(H)
 

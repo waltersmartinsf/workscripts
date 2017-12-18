@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 import numpy as np
 
-def init_plotting(x=14,y=18):
+def init_plotting(x=18,y=14):
     plt.rcParams['figure.figsize'] = (x,y)
     plt.rcParams['font.size'] = 20
     #plt.rcParams['font.family'] = 'Times New Roman'
