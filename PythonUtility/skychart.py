@@ -130,7 +130,7 @@ def skychart(table,site,utc_offset,midpointJD_label,ingressJD_label, egressJD_la
         plt.ylim(0, 90)  
         plt.xlabel('Julian Date')  
         plt.ylabel('Altitude [deg]')
-        plt.savefig(savepath+'/skychart/'+str(table[planet_label].values[i])+' '+str(midpoint.jd)+'_.png')
+        plt.savefig(savepath+'/skychart/'+str(table[planet_label].values[i]).replace(" ", "")+'_'+str(midpoint.jd)+'_.png')
         plt.close()
     print('Done \n')
     # return observable
