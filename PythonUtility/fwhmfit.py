@@ -218,8 +218,8 @@ def ica_to_data(dataframe,path_to_dir):
     if os.path.isfile(path_to_dir+'data_to_ica.csv') == False:
         dataframe.to_csv(path_to_dir+'data_to_ica.csv')
 
-    if os.path.isfile('ica_macosx.m') == False:
-        os.system('cp /Users/walter/github/workscripts/ICAsource/ica_macosx.m ./')
+    if os.path.isfile(path_to_dir+'ica_macosx.m') == False:
+        os.system('cp /Users/walter/github/workscripts/ICAsource/ica_macosx.m '+path_to_dir)
     subprocess.call(["/Applications/MATLAB_R2016b.app/bin/matlab",'-nodisplay','-nosplash','-nodesktop','-r',"try, run('ica_macosx.m'), catch, exit, end, exit"])
 
     matlab_binaries = glob.glob('*.mat')

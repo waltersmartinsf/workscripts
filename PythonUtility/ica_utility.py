@@ -46,6 +46,7 @@ def pearson_ica_test(ica_signal,original_signal,save_dir):
     plt.title('PCA Components')
     plt.savefig(save_dir+'PCA_components_.png')
     plt.savefig(save_dir+'PCA_components_.pdf')
+    plt.close()
 
     pearson,pvalue = np.zeros(ica_signal.shape[1]), np.zeros(ica_signal.shape[1])
 
