@@ -86,18 +86,20 @@ def ica_analysis(ica_data,save_data,dataframe):
     return transit_signal
     
 def systematic_amplitude(save_dir,time_result_file,planet_info,obs_points,scale=10.,kind='normal',
-               save_plot=True,close_plot=True,simple_noise=False,):
+               save_plot=True,close_plot=True,simple_noise=False,max_counts=5000,sys_period=4.):
     '''
     This function create the amplitude of PSF (normalized at the maximum) for each observation 
     for a simulated night. The amplitude will be convoluated with the maximum number of photons, 
     which will return the total flux over time. This assumes that the FWHM is constant over time.
     '''
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
     
     Rp,aR,P,i,u1,u2,e,omega,tmid = planet_info
     
     time = pd.read_csv(time_result_file)
     time = (time.HJD - time.HJD.mean())
-    time = fwhmfit.fitspline(time.values,size)
+    time = fwhmfit.fitspline(time.values,obs_points)
 #     print(time)
     #fwhmfit.transit_model(time,Rp,aR,P,i,u1,u2,e,omega,tmid)
     depth_model = fwhmfit.transit_model(time,Rp,aR,P,i,u1,u2,e,omega,tmid)
@@ -107,7 +109,7 @@ def systematic_amplitude(save_dir,time_result_file,planet_info,obs_points,scale=
     if kind == 'normal':
         sys_noise = scale* Rp * np.random.normal(0,0.1,obs_points)
     if kind == 'sin':
-        T = (time[-1]-time[0])/2.
+        T = (time[-1]-time[0])/sys_period
         sys_noise = scale * Rp * np.sin(2*np.pi*time/T)
     if kind == 'linear':
         sys_noise = scale * Rp * time
@@ -151,7 +153,7 @@ def systematic_amplitude(save_dir,time_result_file,planet_info,obs_points,scale=
             plt.show()
     
     #creating the amplitude
-    amplitude = a*depth_model
+    amplitude = max_counts*depth_model
 
     plt.figure(figsize=(9,9))
     plt.plot(time,amplitude)
@@ -232,6 +234,7 @@ def psf_night(save_dir,amplitude,night,Xc=256,Yc=512,sigma_fwhm=4.,CCDsize=[1024
 #     print(len(sigx),len(sigy))
     
     #creating and alocate space for some variables
+    size = len(amplitude)
     rawflux,signal_ = np.zeros(size), np.zeros(size)
             
     df_rawflux,df_signal = pd.DataFrame(), pd.DataFrame()
@@ -254,10 +257,10 @@ def psf_night(save_dir,amplitude,night,Xc=256,Yc=512,sigma_fwhm=4.,CCDsize=[1024
         os.makedirs(save_dir+night+'/images/normPSF/')
     if not os.path.exists(save_dir+night+'/images/fwhm_fit/'):
         os.makedirs(save_dir+night+'/images/fwhm_fit/')
-    
+
     #creating observation
     for i in range(len(amplitude)):
-        xx,yy = drift_model(save_dir_orig,Xc,Yc,len(amplitude))
+        xx,yy = drift_model(save_dir+night+'/',Xc,Yc,len(amplitude))
         
         img = makeGaussian(amplitude=amplitude[i])
 #         print(img)
@@ -268,13 +271,13 @@ def psf_night(save_dir,amplitude,night,Xc=256,Yc=512,sigma_fwhm=4.,CCDsize=[1024
         if save_plot == True:
             plt.figure(figsize=(11,9))
             plt.imshow(img,cmap=plt.cm.coolwarm)
-            plt.xlim(x0-10,x0+10) #center x0 = 256
-            plt.ylim(y0-10,y0+10) #center y0 = 512
+            plt.xlim(Xc-10,Xc+10) #center x0 = 256
+            plt.ylim(Yc-10,Yc+10) #center y0 = 512
             plt.colorbar(label='# counts')
             plt.xlabel('x [px]')
             plt.ylabel('y [px]')
-            plt.xticks(np.linspace(x0-10,x0+10,5))
-            plt.yticks(np.linspace(y0-10,y0+10,5))
+            plt.xticks(np.linspace(Xc-10,Xc+10,5))
+            plt.yticks(np.linspace(Yc-10,Yc+10,5))
             plt.savefig(save_dir+night+'/snapshot/'+str(i).zfill(5)+'.png')
             if show == True:
                 plt.show()
