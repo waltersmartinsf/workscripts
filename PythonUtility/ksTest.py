@@ -4,7 +4,7 @@ import scipy.stats as stats
 from pandas import DataFrame
 
 
-def k2_dftest(sample,savedir,title='KS Test',xlabel='x',ylabel='y',show=True,saveplot=True):
+def k2_dftest(sample,savedir,title='KS Test',xlabel='x',ylabel='y',show=True,saveplot=True,name_plot='K2_test.pdf'):
     '''
     Apply the Kolmogorov-Sminorv Test between columns of a pandas dataframe 
     '''
@@ -18,11 +18,11 @@ def k2_dftest(sample,savedir,title='KS Test',xlabel='x',ylabel='y',show=True,sav
             print(i,j,x)
             k2_results[i][j] = 1- x.pvalue
 
-    plt.figure(figsize=(9,9))
+    plt.figure(figsize=(14,9))
     plt.imshow(k2_results,cmap=plt.cm.coolwarm)
     for i in range(k2_results.shape[0]):
         for j in range(k2_results.shape[1]):
-            plt.text(i,j,str(round(k2_results[i][j],4)),horizontalalignment='center',verticalalignment='center',color='white')
+            plt.text(i,j,str(round(k2_results[i][j],6)),horizontalalignment='center',verticalalignment='center',color='white')
     
     plt.colorbar(label='p-value')
     names = sample.columns
@@ -34,7 +34,7 @@ def k2_dftest(sample,savedir,title='KS Test',xlabel='x',ylabel='y',show=True,sav
     plt.ylabel(ylabel)
 
     if saveplot == True:
-        plt.savefig(savedir+'K2_test_after_ICA.pdf')
+        plt.savefig(savedir+name_plot)
     if show == True:
         plt.show()
     else:
