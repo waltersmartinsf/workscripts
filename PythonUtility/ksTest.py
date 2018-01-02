@@ -24,7 +24,7 @@ def k2_dftest(sample,savedir,title='KS Test',xlabel='x',ylabel='y',show=True,sav
         for j in range(k2_results.shape[1]):
             plt.text(i,j,str(round(k2_results[i][j],6)),horizontalalignment='center',verticalalignment='center',color='white')
     
-    plt.colorbar(label='p-value')
+    plt.colorbar(label='p-value \n'+'mean = '+str(round(np.mean(k2_results),4))+' std = '+str(round(np.std(k2_results),4)))
     names = sample.columns
 
     plt.xticks(np.arange(0,len(names),1),names)
