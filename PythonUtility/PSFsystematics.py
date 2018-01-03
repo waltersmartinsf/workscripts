@@ -329,3 +329,24 @@ def psf_night(save_dir,amplitude,night,Xc=256,Yc=512,sigma_fwhm=4.,CCDsize=[1024
     }
     return result
 
+def noise_component(obs_points,phase,planet_info,kind='normal',scale=1.,sys_period=8.):
+    time = phase
+    Rp,aR,P,i,u1,u2,e,omega,tmid = planet_info
+    #creating systematic noise -- ['linear','exp','sin','normal','twopeaks']
+    if kind == 'normal':
+        sys_noise = scale* Rp * np.random.normal(0,0.1,obs_points)
+    if kind == 'sin':
+        T = (time[-1]-time[0])/sys_period
+        sys_noise = scale * Rp * np.sin(2*np.pi*time/T)
+    if kind == 'linear':
+        sys_noise = scale * Rp * time
+    if kind == 'onepeak':
+        step = np.linspace(0,1,obs_points)
+        sys_noise = scale * Rp * stats.norm(0.3,0.1).pdf(step)
+    if kind == 'twopeaks':
+        step = np.linspace(0,1,obs_points)
+        sys_noise = scale * Rp * (stats.norm(0.3,0.1).pdf(step) + stats.norm(0.7,0.1).pdf(step))
+    if kind == 'exp':
+        step = np.linspace(0,1,obs_points)
+        sys_noise = scale* Rp* np.exp(-step)
+    return sys_noise
