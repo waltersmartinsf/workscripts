@@ -12,7 +12,52 @@ import yaml
 import os
 from matplotlib import pyplot as plt #graphical package
 
-
+def Observable(dataframe,telescope,baseline=2):
+    observable = []
+    
+    midtransit = Time(dataframe['MidpointJD'].values,format='jd',scale='utc')
+    ingress2 = Time(dataframe['IngressJD'].values,format='jd',scale='utc') - baseline * u.hour
+    egress2 = Time(dataframe['EgressJD'].values,format='jd',scale='utc') + baseline * u.hour
+    ingress = Time(dataframe['IngressJD'].values,format='jd',scale='utc')
+    egress = Time(dataframe['EgressJD'].values,format='jd',scale='utc')
+    
+    for i in range(len(midtransit)):
+        print(i,'\n')
+        midpoint = midtransit[i]
+        #Creating a range of 12hours between the midpoint transit
+        calendar = midpoint + np.linspace(-12, 12, 1000)*u.hour
+        #change for Alt-Azimute frame
+        altazframe = AltAz(obstime=calendar, location=telescope)
+        sunaltazs = get_sun(calendar).transform_to(altazframe)
+        #moonaltazs = get_moon(calendar).transform_to(altazframe)
+        #Planet Altitude in sky
+        planet = SkyCoord(ra=dataframe['RA'].values[i]*u.degree, dec=dataframe['Dec'].values[i]*u.degree)
+        planet_altazs = planet.transform_to(AltAz(obstime=calendar, location=telescope))
+        ALT_INGRESS2 = planet.transform_to(AltAz(obstime=ingress2[i], location=telescope)).alt.deg
+        ALT_EGRESS2 = planet.transform_to(AltAz(obstime=egress2[i], location=telescope)).alt.deg
+        #creating a dataframe to filter
+        x = pd.DataFrame([calendar.jd,sunaltazs.alt.deg,
+                        np.zeros(len(calendar.jd))+ingress2.jd[i],np.zeros(len(calendar.jd))+egress2.jd[i],
+                        planet_altazs.alt.deg]).T
+        x.columns = ['JD','SUN_ALT','Ingress2h','Egress2h','Planet_ALT']
+        #dark sky happens when the Sun Altitude is below 0 degrees.
+        twilight = x[x['SUN_ALT']<0]['JD'].values[0]
+        sunrise = x[x['SUN_ALT']<0]['JD'].values[-1]
+        #check both conditions: ingress e egress -2h and +2h
+        if (twilight < ingress2.jd[i]) and (sunrise > egress2.jd[i]) and (ALT_INGRESS2 > 40.) and (ALT_EGRESS2) > 40.:
+            print(i,'YES')
+            print(i,'ALT INGRESS-2h, EGRESS+2h = ',ALT_INGRESS2,ALT_EGRESS2)
+            print(i,'twilight = ',twilight,' < ','Ingress - 2h = ',ingress2.jd[i])
+            print(i, 'sunrise = ',sunrise,' > ','egress +2h = ', egress2.jd[i])
+            observable.append(True)
+        else:
+            print(i,'NO')
+            print(i,'ALT INGRESS-2h, EGRESS+2h = ',ALT_INGRESS2,ALT_EGRESS2)
+            print(i,'twilight = ',twilight,' > ','Ingress - 2h = ',ingress2.jd[i])
+            print(i, 'sunrise = ', sunrise,' < ', 'egress +2h = ',egress2.jd[i])
+            observable.append(False)
+        print('** \n')
+    return observable
 
 def skychart(table,site,utc_offset,midpointJD_label,ingressJD_label, egressJD_label, RA_deg_label,DEC_deg_label,planet_label,savepath):
     """

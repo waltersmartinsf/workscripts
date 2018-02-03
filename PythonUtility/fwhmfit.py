@@ -13,6 +13,7 @@ import matplotlib.pylab as plt
 from astropy.io import fits
 import lmfit
 import simulate_starfield as smpf
+import matplotlib as mpl
 
 def gaussian2d(x,y,x0,y0,amp,fwhm):
     return amp * np.exp(-4*np.log(2) * ((x-x0)**2 + (y-y0)**2) / fwhm**2)
@@ -222,7 +223,7 @@ def ica_to_data(dataframe,path_to_dir):
         os.system('cp /Users/walter/github/workscripts/ICAsource/ica_macosx.m '+path_to_dir)
     subprocess.call(["/Applications/MATLAB_R2016b.app/bin/matlab",'-nodisplay','-nosplash','-nodesktop','-r',"try, run('ica_macosx.m'), catch, exit, end, exit"])
 
-    matlab_binaries = glob.glob('*.mat')
+    matlab_binaries = glob('*.mat')
     ica_data = sio.loadmat(matlab_binaries[0])
     print(ica_data.keys())
     signal = pd.DataFrame(ica_data['result']).T

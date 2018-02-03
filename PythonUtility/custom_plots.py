@@ -46,3 +46,24 @@ def plot_residuals(x,y1,y2,y1err=None,title='Plot',y1label='y1',xlabel='x',y2lab
     ax2.set_xlim(x.min(),x.max())
     plt.close()
     return f
+
+def A4init_plotting():
+    plt.rcParams['figure.figsize'] = (11.69,8.27)
+    plt.rcParams['font.size'] = 15
+    #plt.rcParams['font.family'] = 'Times New Roman'
+    plt.rcParams['axes.labelsize'] = plt.rcParams['font.size']
+    plt.rcParams['axes.titlesize'] = 0.75*plt.rcParams['font.size']
+    plt.rcParams['legend.fontsize'] = 0.65*plt.rcParams['font.size']
+    plt.rcParams['xtick.labelsize'] = plt.rcParams['font.size']
+    plt.rcParams['ytick.labelsize'] = plt.rcParams['font.size']
+    plt.rcParams['xtick.major.size'] = 3
+    plt.rcParams['xtick.minor.size'] = 3
+    plt.rcParams['xtick.major.width'] = 1
+    plt.rcParams['xtick.minor.width'] = 1
+    plt.rcParams['ytick.major.size'] = 3
+    plt.rcParams['ytick.minor.size'] = 3
+    plt.rcParams['ytick.major.width'] = 1
+    plt.rcParams['ytick.minor.width'] = 1
+    plt.rcParams['legend.frameon'] = True
+    plt.rcParams['legend.loc'] = 'best'
+    plt.rcParams['axes.linewidth'] = 1
