@@ -3,7 +3,7 @@ from matplotlib.colors import LogNorm
 import numpy as np
 
 
-def corner_beautiful_plot(data,bestfit,split,bins=50,labels=None,interpolation='nearest',cmap=plt.cm.gray,show=True,xrotate=35,yrotate=35):
+def corner_beautiful_plot(data,bestfit,split,bins=50,labels=None,interpolation='nearest',cmap='magma',show=True,xrotate=35,yrotate=35):
     """
     Create a croner plot from a pandas dataframe input.
     ___
@@ -101,6 +101,7 @@ def corner_beautiful_plot(data,bestfit,split,bins=50,labels=None,interpolation='
                 #bins setting to be at the sqrt-scale, sqrt(len(i-column)), to show
                 #appropriated scale of the data set. 
                 H,bins_edges = np.histogram(data.iloc[:,i].values,normed=True,bins='sqrt')
+                del bins_edges
                 #plot the histogram at same conditions of the numpy.histogram H variable
                 axarr[i][j].hist(data.iloc[:,i].values,normed=True,bins='sqrt')
                 #plot a vertical line of the bestfit i-value to zero to maximum 
